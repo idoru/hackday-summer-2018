@@ -12,9 +12,34 @@ spec:
       labels:
         app: nethack
     spec:
+      volumes:
+      - name: dgamelauncher-data-volume
+        persistentVolumeClaim:
+          claimName: dgamelauncher-pv-claim
+      - name: nethack-data-volume
+        persistentVolumeClaim:
+          claimName: nethack-pv-claim
       containers:
       - name: nethack-server
         image: matsuu/nethack-server:latest
+        volumeMounts:
+        - name: dgamelauncher-data-volume
+          mountPath: /opt/nethack/nethack.alt.org/dgldir
+        - name: nethack-data-volume
+          mountPath: /opt/nethack/nethack.alt.org/nh343/var
         ports:
         - containerPort: 23
-
+      initContainers:
+      - name: init-volumes
+        image: matsuu/nethack-server:latest
+        command:
+          - sh
+          - -c
+          - "if [ -z \"$(ls -A /init-dgldir/)\" ] ; then cp -R /opt/nethack/nethack.alt.org/dgldir/* /init-dgldir/ ; fi && \
+            if [ -z \"$(ls -A /init-nethack/)\" ] ; then cp -R /opt/nethack/nethack.alt.org/nh343/var/* /init-nethack/ ; fi && \
+            chown -R games.games /init-dgldir /init-nethack"
+        volumeMounts:
+        - name: dgamelauncher-data-volume
+          mountPath: /init-dgldir
+        - name: nethack-data-volume
+          mountPath: /init-nethack
