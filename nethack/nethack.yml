@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nethack-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nethack
+  template:
+    metadata:
+      labels:
+        app: nethack
+    spec:
+      containers:
+      - name: nethack-server
+        image: matsuu/nethack-server:latest
+        ports:
+        - containerPort: 23
+
